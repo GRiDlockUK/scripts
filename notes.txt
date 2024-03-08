@@ -1,0 +1,220 @@
+BACKUP
+- Used Win32DiskImager to E:\Downloads\RaspberryPi\Backup
+
+-- profile
+
+nano .profile
+
+alias dir='ls -ltah'
+alias cls='clear'
+alias ver='cat /etc/os-release'
+alias temp='vcgencmd measure_temp'
+alias dc='docker-compose up -d'
+alias nd='nano docker-compose.yml'
+alias update='sudo apt-get update && sudo apt-get -y upgrade'
+alias un='sudo nala upgrade -y'
+
+-- updates 
+
+sudo apt-get update
+sudo apt install nala -y
+sudo nala upgrade -y
+
+  sudo apt-get update --allow-releaseinfo-change
+  sudo apt-get full-upgrade
+  sudo apt-get update && sudo apt-get upgrade
+  sudo apt dist-upgrade -y  
+  sudo rpi-update  
+  sudo nano /etc/apt/sources.list
+  sudo apt get update
+  sudo apt dist-upgrade
+  sudo apt get full-upgrade
+
+-- odds
+
+sudo nala install tree htop git
+
+
+-- samba
+
+mkdir shared
+sudo apt-get install samba samba-common-bin
+sudo nano /etc/samba/smb.conf
+
+[shared] 
+path = /home/pi/shared
+writeable=Yes
+create mask=0777
+directory mask=0777
+public=no
+
+sudo smbpasswd -a pi
+sudo systemctl restart smbd
+
+-- Pi5
+sudo nano /boot/firmware/config.txt
+usb_max_current_enable=1
+
+-- log2ram
+
+wget https://github.com/azlux/log2ram/archive/master.tar.gz -O log2ram.tar.gz
+tar xf log2ram.tar.gz
+rm log2ram.tar.gz
+cd log2ram-master
+sudo ./install.sh
+sudo reboot
+
+(sudo nano /etc/log2ram.conf)
+
+-- get docker
+
+sudo apt-get install docker-compose
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+rm get-docker.sh
+sudo usermod -aG docker pi
+sudo systemctl enable docker
+
+-- port 2375 open
+
+sudo nano /usr/lib/systemd/system/docker.service
+> on ExecStart - add this: -H tcp://0.0.0.0:2375
+systemctl daemon-reload
+systemctl restart docker.service
+
+
+-- docker-compose
+https://withblue.ink/2020/06/24/docker-and-docker-compose-on-raspberry-pi-os.html
+
+# Replace with the latest version from https://github.com/docker/compose/releases/latest
+DOCKER_COMPOSE_VERSION="2.1.1"
+# For 64-bit OS use:
+#DOCKER_COMPOSE_ARCH="aarch64"
+# For 32-bit OS use:
+DOCKER_COMPOSE_ARCH="armv7"
+
+sudo curl -L "https://github.com/docker/compose/releases/download/v${DOCKER_COMPOSE_VERSION}/docker-compose-linux-${DOCKER_COMPOSE_ARCH}" -o /usr/bin/docker-compose
+sudo chmod +x /usr/bin/docker-compose
+
+
+-- install OMV
+
+wget -O - https://github.com/OpenMediaVault-Plugin-Developers/installScript/raw/master/install | sudo bash
+
+
+-- PiOLED
+
+curl https://get.pimoroni.com/inky | bash
+
+sudo apt-get install python3-pip python3-pil <-- not needed
+sudo pip3 install --upgrade setuptools
+sudo pip3 install --upgrade adafruit-python-shell
+sudo pip3 install --upgrade adafruit-circuitpython-ssd1306
+sudo apt-get install i2c-tools   <-- not needed
+ 
+sudo i2cdetect -y -l
+
+-- failed to detect board ?
+
+pip install netifaces
+
+
+
+
+sudo fdisk -l
+sudo mount /dev/sda1 /media/sda1
+sudo apt install hdparm
+sudo hdparm -S12 /dev/sda
+
+sudo mount -o ro,noload /dev/sdb2 /media/sdcard
+
+sudo apt install git
+git clone https://github.com/billw2/rpi-clone.git 
+cd rpi-clone
+sudo cp rpi-clone rpi-clone-setup /usr/local/sbin
+lsblk
+sudo rpi-clone sda
+
+dd if=/dev/zero of=/tmp/test3.img bs=20M count=5 oflag=direct
+
+
+esphome issue
+	docker stop esphome
+	sudo rm -rf /.esphome/
+	docker restart esphome
+	docker exec -it esphome /bin/bash
+	sed -i '/arch = platform.machine().lower()/a\ \ \ \ arch = "armv7l"' /usr/local/lib/python3.11/dist-packages/platformio/util.py
+
+
+move docker items...
+	from source
+		cd 
+		cd docker
+		docker stop x
+		tar -cvf x.tar x/
+		scp x.tar pi@pi4-01.local:/home/pi/docker/
+		rm x.tar
+	on destination 
+		tar -xvf x.tar
+		rm x.tar
+		cd x
+		dc (domain compose)
+ 
+ 
+
+docker packages
+SBFSPOT - needs specific permissions -- sudo chown pi:5000 /home/pi/docker/sbfspot -R  &  sudo chmod 775 sbfspot/ -R
+
+
+
+-- DROPBOX Uploader
+
+App key hhu9hpu4e8tzh1d
+App secret drxtotj248jhnkq
+
+
+
+
+
+
+-- SSH keys
+
+sudo ssh-keygen
+ssh-copy-id -i id_rsa.pub pi@pi4-02.lan
+
+(see ~/.ssh folder -- authorised keys)
+
+
+-- Python3 issue
+https://www.makeuseof.com/fix-pip-error-externally-managed-environment-linux/
+sudo rm /usr/lib/python3.11/EXTERNALLY-MANAGED
+
+
+python3 -m venv venv
+source venv/bin/activate
+
+
+Warning from apt-key: Key is stored in legacy trusted.gpg keyring (/etc/apt/trusted.gpg ...
+sudo cp /etc/apt/trusted.gpg /etc/apt/trusted.gpg.d
+
+
+
+
+
+
+GIT
+
+ssh-keygen -t ed25519
+cat /home/pi/.ssh/id_ed25519.pub
+-- add to https://github.com/settings/keys
+git clone git@github.com:GRiDlockUK/scripts.git
+git clone git@github.com:GRiDlockUK/python.git
+
+git config --global user.email "graham.dimmock@hotmail.com"
+git config --global user.name "GRiDlockuk"
+
+
+
+
+
+
